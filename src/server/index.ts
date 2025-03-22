@@ -31,7 +31,7 @@ app.use(limiter);
 app.use('/api/models', modelRouter);
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (_, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
