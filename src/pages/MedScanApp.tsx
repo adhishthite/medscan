@@ -12,7 +12,6 @@ import { Loader2, FileText, X } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import FileUpload from "@/components/FileUpload"
 import ResultsView from "@/components/ResultsView"
-import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
@@ -102,7 +101,6 @@ const MedScanApp = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <Header />
       
       <main className="flex-1 py-8">
         <div className="container mx-auto max-w-4xl px-4">

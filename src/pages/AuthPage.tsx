@@ -28,8 +28,26 @@ const AuthPage = ({ onAuthenticate }: AuthPageProps) => {
     setTimeout(() => {
       // For demo purposes, accept any key
       // In a real app, you would validate this with an actual API call
-      onAuthenticate()
-      setIsLoading(false)
+      
+      // Set session timeout for 30 minutes
+      const sessionTimeout = 30 * 60 * 1000; // 30 minutes in milliseconds
+      
+      // Store authentication timestamp
+      localStorage.setItem('authTimestamp', Date.now().toString());
+      
+      // Set timeout to logout after 30 minutes
+      const logoutTimer = setTimeout(() => {
+        // Clear auth data and reload page to logout
+        localStorage.removeItem('authTimestamp');
+        window.location.reload();
+        toast.info("Session expired. Please authenticate again.");
+      }, sessionTimeout);
+      
+      // Store timer ID in case we need to clear it
+      window.sessionStorage.setItem('logoutTimerId', logoutTimer.toString());
+      
+      onAuthenticate();
+      setIsLoading(false);
     }, 1000)
   }
 
