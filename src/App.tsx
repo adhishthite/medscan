@@ -2,6 +2,8 @@ import { useState } from "react"
 import AuthPage from "./pages/AuthPage"
 import MedScanApp from "./pages/MedScanApp"
 import { Toaster } from "@/components/ui/sonner"
+import { ThemeProvider } from "@/components/theme-provider"
+
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -23,7 +25,7 @@ function App() {
   }
 
   return (
-    <>
+    <ThemeProvider>
       <Toaster />
       <div className="flex flex-col items-center justify-center min-h-svh">
         {isAuthenticated && checkSessionExpiry() ? (
@@ -32,7 +34,7 @@ function App() {
           <AuthPage onAuthenticate={handleAuthenticate} />
         )}
       </div>
-    </>
+    </ThemeProvider>
   )
 }
 

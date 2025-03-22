@@ -17,13 +17,29 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { analyzeWithModel, MODELS } from "@/lib/model-service"
 import { ModelProvider } from "@/lib/types"
+import { ModeToggle } from "@/components/mode-toggle"
 
 // Define form schema
 const formSchema = z.object({
-  patientName: z.string().min(1, "Patient name is required"),
-  patientAge: z.string().min(1, "Patient age is required"),
-  additionalNotes: z.string().optional(),
-  apiKey: z.string().optional(),
+  patientName: z.string()
+    .min(3, "Patient name must be at least 3 characters")
+    .max(100, "Patient name is too long")
+    .refine(val => /^[a-zA-Z\s\-'.]+$/.test(val), {
+      message: "Patient name should only contain letters, spaces, hyphens, apostrophes, and periods"
+    }),
+  patientAge: z.string()
+    .refine(val => !isNaN(Number(val)), {
+      message: "Age must be a number"
+    })
+    .refine(val => {
+      const num = Number(val);
+      return num >= 5 && num <= 90;
+    }, {
+      message: "Patient age must be between 5 and 90"
+    }),
+  additionalNotes: z.string()
+    .max(500, "Notes cannot exceed 500 characters")
+    .optional(),
   modelProvider: z.nativeEnum(ModelProvider),
 })
 
@@ -42,14 +58,9 @@ const MedScanApp = () => {
       patientName: "",
       patientAge: "",
       additionalNotes: "",
-      apiKey: "",
       modelProvider: ModelProvider.Gemini,
     },
   })
-
-  // Watch for model provider changes
-  const selectedModelProvider = form.watch("modelProvider");
-  const selectedModel = MODELS.find(model => model.id === selectedModelProvider);
 
   const handleFileUpload = (acceptedFiles: File[]) => {
     // Limit to 5 files
@@ -80,7 +91,7 @@ const MedScanApp = () => {
           additionalNotes: data.additionalNotes,
           files,
         }, 
-        data.apiKey || ""
+        ""
       );
       
       setResults(analysisResult);
@@ -104,14 +115,17 @@ const MedScanApp = () => {
       
       <main className="flex-1 py-8">
         <div className="container mx-auto max-w-4xl px-4">
-          <motion.h1 
-            className="text-3xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            MedScan Analysis
-          </motion.h1>
+          <div className="flex justify-between items-center mb-8">
+            <motion.h1 
+              className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              MedScan Analysis
+            </motion.h1>
+            <ModeToggle />
+          </div>
           
           <AnimatePresence mode="wait">
             {results ? (
@@ -240,30 +254,6 @@ const MedScanApp = () => {
                             )}
                           />
                         </div>
-                        
-                        {!selectedModel?.apiKeyPlaceholder.includes("Not required") && (
-                          <FormField
-                            control={form.control}
-                            name="apiKey"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-sm font-medium">API Key</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    type="password"
-                                    placeholder={selectedModel?.apiKeyPlaceholder || "Enter your API key"} 
-                                    className="shadow-sm font-mono"
-                                    {...field} 
-                                  />
-                                </FormControl>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {selectedModel?.apiKeyHelp}
-                                </p>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        )}
                         
                         <div className="space-y-4">
                           <div>
