@@ -46,7 +46,7 @@ Analyze the attached medical documents and provide a comprehensive report includ
 
 Format the report in Markdown with proper headings, lists, and emphasis where appropriate.
 
-NOTE: WE WANT ONLY THE REPORT, NOT ANYTHING ELSE.`;
+NOTE: WE WANT ONLY THE REPORT, NOT ANYTHING ELSE. PLEASE FOCUS ON THE MEDICAL ANALYSIS.`;
 }
 
 export async function analyzeWithModel(

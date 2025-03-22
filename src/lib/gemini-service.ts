@@ -87,7 +87,7 @@ export async function analyzeWithGemini(data: MedicalAnalysisData, apiKey: strin
     const chat = model.startChat({
       safetySettings,
       generationConfig: {
-        temperature: 0.2,
+        temperature: 0.1,
         topK: 40,
         topP: 0.95,
       },

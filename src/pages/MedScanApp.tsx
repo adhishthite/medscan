@@ -24,7 +24,7 @@ const formSchema = z.object({
   patientName: z.string().min(1, "Patient name is required"),
   patientAge: z.string().min(1, "Patient age is required"),
   additionalNotes: z.string().optional(),
-  apiKey: z.string().min(1, "API key is required"),
+  apiKey: z.string().optional(),
   modelProvider: z.nativeEnum(ModelProvider),
 })
 
@@ -81,7 +81,7 @@ const MedScanApp = () => {
           additionalNotes: data.additionalNotes,
           files,
         }, 
-        data.apiKey
+        data.apiKey || ""
       );
       
       setResults(analysisResult);
@@ -230,26 +230,28 @@ const MedScanApp = () => {
                           )}
                         />
                         
-                        <FormField
-                          control={form.control}
-                          name="apiKey"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>API Key</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="password"
-                                  placeholder={selectedModel?.apiKeyPlaceholder || "Enter your API key"} 
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {selectedModel?.apiKeyHelp}
-                              </p>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        {!selectedModel?.apiKeyPlaceholder.includes("Not required") && (
+                          <FormField
+                            control={form.control}
+                            name="apiKey"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>API Key</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="password"
+                                    placeholder={selectedModel?.apiKeyPlaceholder || "Enter your API key"} 
+                                    {...field} 
+                                  />
+                                </FormControl>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {selectedModel?.apiKeyHelp}
+                                </p>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
                         
                         <div className="space-y-4">
                           <div>
