@@ -14,14 +14,18 @@ import FileUpload from "@/components/FileUpload"
 import ResultsView from "@/components/ResultsView"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
-import { analyzeMedicalDocuments } from "@/lib/openai-service"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
+import { analyzeWithModel, MODELS } from "@/lib/model-service"
+import { ModelProvider } from "@/lib/types"
 
 // Define form schema
 const formSchema = z.object({
   patientName: z.string().min(1, "Patient name is required"),
   patientAge: z.string().min(1, "Patient age is required"),
   additionalNotes: z.string().optional(),
-  apiKey: z.string().min(1, "OpenAI API key is required"),
+  apiKey: z.string().min(1, "API key is required"),
+  modelProvider: z.nativeEnum(ModelProvider),
 })
 
 type FormData = z.infer<typeof formSchema>
@@ -30,6 +34,7 @@ const MedScanApp = () => {
   const [files, setFiles] = useState<File[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [results, setResults] = useState<string | null>(null)
+  const [modelProvider, setModelProvider] = useState<ModelProvider>(ModelProvider.Gemini)
 
   // Initialize form
   const form = useForm<FormData>({
@@ -39,8 +44,13 @@ const MedScanApp = () => {
       patientAge: "",
       additionalNotes: "",
       apiKey: "",
+      modelProvider: ModelProvider.Gemini,
     },
   })
+
+  // Watch for model provider changes
+  const selectedModelProvider = form.watch("modelProvider");
+  const selectedModel = MODELS.find(model => model.id === selectedModelProvider);
 
   const handleFileUpload = (acceptedFiles: File[]) => {
     // Limit to 5 files
@@ -59,15 +69,20 @@ const MedScanApp = () => {
     }
 
     setIsAnalyzing(true)
+    setModelProvider(data.modelProvider)
     
     try {
-      // Call our OpenAI service with actual documents
-      const analysisResult = await analyzeMedicalDocuments({
-        patientName: data.patientName,
-        patientAge: data.patientAge,
-        additionalNotes: data.additionalNotes,
-        files,
-      }, data.apiKey);
+      // Call our model service with the selected provider
+      const analysisResult = await analyzeWithModel(
+        data.modelProvider,
+        {
+          patientName: data.patientName,
+          patientAge: data.patientAge,
+          additionalNotes: data.additionalNotes,
+          files,
+        }, 
+        data.apiKey
+      );
       
       setResults(analysisResult);
       toast.success("Analysis complete!");
@@ -109,7 +124,11 @@ const MedScanApp = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5 }}
               >
-                <ResultsView results={results} onNewScan={resetForm} />
+                <ResultsView 
+                  results={results} 
+                  onNewScan={resetForm} 
+                  modelName={MODELS.find(model => model.id === modelProvider)?.name}
+                />
               </motion.div>
             ) : (
               <motion.div
@@ -178,19 +197,54 @@ const MedScanApp = () => {
                         
                         <FormField
                           control={form.control}
+                          name="modelProvider"
+                          render={({ field }) => (
+                            <FormItem className="space-y-3">
+                              <FormLabel>AI Model</FormLabel>
+                              <FormControl>
+                                <RadioGroup
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value}
+                                  className="flex flex-col space-y-3"
+                                >
+                                  {MODELS.map(model => (
+                                    <div key={model.id} className="flex items-start space-x-3 space-y-0">
+                                      <RadioGroupItem value={model.id} id={model.id} />
+                                      <div className="grid gap-1.5 leading-none">
+                                        <Label
+                                          htmlFor={model.id}
+                                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                        >
+                                          {model.name}
+                                        </Label>
+                                        <p className="text-sm text-muted-foreground">
+                                          {model.description}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </RadioGroup>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
                           name="apiKey"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>OpenAI API Key</FormLabel>
+                              <FormLabel>API Key</FormLabel>
                               <FormControl>
                                 <Input 
                                   type="password"
-                                  placeholder="Enter your OpenAI API key" 
+                                  placeholder={selectedModel?.apiKeyPlaceholder || "Enter your API key"} 
                                   {...field} 
                                 />
                               </FormControl>
                               <p className="text-xs text-muted-foreground mt-1">
-                                Requires access to the GPT-4o model.
+                                {selectedModel?.apiKeyHelp}
                               </p>
                               <FormMessage />
                             </FormItem>
@@ -272,7 +326,7 @@ const MedScanApp = () => {
         </div>
       </main>
       
-      <Footer />
+      <Footer modelProvider={modelProvider} />
     </div>
   )
 }

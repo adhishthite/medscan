@@ -1,7 +1,14 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { ModelProvider } from "@/lib/types";
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  modelProvider: ModelProvider;
+}
+
+const Footer: React.FC<FooterProps> = ({ modelProvider }) => {
+  const modelName = modelProvider === ModelProvider.OpenAI ? "GPT-4o" : "Gemini 2.0 Flash";
+  
   return (
     <motion.footer 
       className="mt-auto border-t py-6 md:py-0"
@@ -20,7 +27,7 @@ const Footer: React.FC = () => {
           transition={{ delay: 0.7, duration: 0.5 }}
         >
           <p className="text-center text-sm text-muted-foreground">
-            Powered by GPT-4o
+            Powered by {modelName}
           </p>
         </motion.div>
       </div>

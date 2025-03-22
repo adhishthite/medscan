@@ -1,9 +1,9 @@
-import OpenAI from "openai";
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 import { MedicalAnalysisData } from "./types";
 import { generateMedicalPrompt } from "./model-service";
 
 // Define model to use
-const MODEL = "gpt-4o";
+const MODEL = "gemini-2.0-flash";
 
 // Maximum total size for all files in bytes (20MB)
 const MAX_TOTAL_FILE_SIZE = 20 * 1024 * 1024;
@@ -11,10 +11,10 @@ const MAX_TOTAL_FILE_SIZE = 20 * 1024 * 1024;
 // Warning threshold for file size in bytes (5MB)
 const FILE_SIZE_WARNING_THRESHOLD = 5 * 1024 * 1024;
 
-export async function analyzeMedicalDocuments(data: MedicalAnalysisData, apiKey: string): Promise<string> {
+export async function analyzeWithGemini(data: MedicalAnalysisData, apiKey: string): Promise<string> {
   try {
-    if (!apiKey.startsWith("sk-")) {
-      throw new Error("Invalid API key format. OpenAI keys should start with 'sk-'.");
+    if (!apiKey) {
+      throw new Error("Google AI API key is required.");
     }
 
     // Check total file size
@@ -29,18 +29,14 @@ export async function analyzeMedicalDocuments(data: MedicalAnalysisData, apiKey:
       console.warn(`Processing ${largeFiles.length} large files. Analysis may take longer.`);
     }
 
-    // Initialize OpenAI client with extended timeout for large files
-    const openai = new OpenAI({ 
-      apiKey,
-      maxRetries: 3,
-      timeout: 300000, // 5 minutes
-      dangerouslyAllowBrowser: true // Allow usage in browser environments
-    });
+    // Initialize Google Generative AI client
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: MODEL });
 
     // Log the count and types of files for debugging
     console.log(`Processing ${data.files.length} files:`, data.files.map(f => `${f.name} (${(f.size / 1024).toFixed(2)}KB)`));
 
-    // Convert files to base64
+    // Convert files to appropriate format for Gemini
     const fileContents = await Promise.all(
       data.files.map(async (file) => {
         try {
@@ -53,10 +49,11 @@ export async function analyzeMedicalDocuments(data: MedicalAnalysisData, apiKey:
           const duration = Date.now() - startTime;
           console.log(`Completed processing file: ${file.name} in ${duration}ms`);
           
+          // Return the file data in Gemini compatible format
           return {
-            type: "image_url" as const,
-            image_url: {
-              url: `data:${file.type};base64,${base64}`,
+            inlineData: {
+              data: base64,
+              mimeType: file.type,
             },
           };
         } catch (err) {
@@ -66,68 +63,72 @@ export async function analyzeMedicalDocuments(data: MedicalAnalysisData, apiKey:
       })
     );
 
-    // Get the standardized prompt
-    const promptText = generateMedicalPrompt(data);
-
-    // Construct the message content with proper typing
-    const content = [
+    // Set safety settings
+    const safetySettings = [
       {
-        type: "text" as const,
-        text: promptText,
+        category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+        threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
       },
-      ...fileContents,
+      {
+        category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+        threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+      },
+      {
+        category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+        threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+      },
+      {
+        category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+        threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+      },
     ];
+
+    // Create a chat instance
+    const chat = model.startChat({
+      safetySettings,
+      generationConfig: {
+        temperature: 0.2,
+        topK: 40,
+        topP: 0.95,
+      },
+    });
+
+    // Get the standardized prompt text
+    const promptText = generateMedicalPrompt(data);
 
     console.log(`Attempting to use model: ${MODEL}`);
     
-    // Call the OpenAI API
-    const response = await openai.chat.completions.create({
-      model: MODEL,
-      messages: [
-        {
-          role: "user",
-          content: content,
-        },
-      ],
-      temperature: 0.2,
-    });
+    // Send the request to Gemini with both text and images
+    const result = await chat.sendMessage([
+      promptText,
+      ...fileContents,
+    ]);
     
-    // If we get here, the API call was successful
+    const response = await result.response;
     console.log(`Successfully used model: ${MODEL}`);
     
-    // Check if we received a proper response
-    if (!response.choices || response.choices.length === 0) {
-      throw new Error("No response received from OpenAI. Please try again.");
-    }
-    
     // Extract and return the response content
-    return response.choices[0]?.message?.content || "No analysis could be generated.";
+    return response.text() || "No analysis could be generated.";
   } catch (error: unknown) {
-    console.error("Error analyzing medical documents:", error);
+    console.error("Error analyzing medical documents with Gemini:", error);
     
-    // Handle specific OpenAI API errors
-    if (typeof error === 'object' && error !== null) {
-      const apiError = error as { status?: number; message?: string };
-      
-      if (apiError.status === 401) {
-        throw new Error("Invalid or expired API key. Please check your OpenAI API key and try again.");
-      } else if (apiError.status === 429) {
-        throw new Error("OpenAI API rate limit exceeded. Please try again later.");
-      } else if (apiError.status === 404) {
-        throw new Error(`The specified model (${MODEL}) was not found. Your account might not have access to GPT-4o.`);
-      } else if (apiError.status === 400) {
-        throw new Error("Invalid request to OpenAI API. Your files may be too large or in an unsupported format.");
-      } else if (apiError.message) {
-        // If OpenAI provided a specific error message, use it
-        throw new Error(`OpenAI error: ${apiError.message}`);
+    // Handle specific errors
+    if (error instanceof Error) {
+      if (error.message.includes("API key")) {
+        throw new Error("Invalid or missing Google AI API key. Please check your API key and try again.");
+      } else if (error.message.includes("quota")) {
+        throw new Error("Google AI API quota exceeded. Please try again later.");
+      } else if (error.message.includes("not found") || error.message.includes("doesn't exist")) {
+        throw new Error(`The specified model (${MODEL}) was not found. Your account might not have access to Gemini 2.0 Flash.`);
+      } else if (error.message.includes("invalid") || error.message.includes("format")) {
+        throw new Error("Invalid request to Gemini API. Your files may be too large or in an unsupported format.");
+      } else {
+        // If Google provided a specific error message, use it
+        throw new Error(`Gemini error: ${error.message}`);
       }
     }
     
     // If we get here, it's an unknown error
-    if (error instanceof Error) {
-      throw new Error(`Error: ${error.message}`);
-    }
-    
     throw new Error("Failed to analyze medical documents. Please try again.");
   }
 }
@@ -217,4 +218,4 @@ async function fileToBase64(file: File): Promise<string> {
       reject(new Error("File reading timed out. The file may be too large."));
     }, 60000); // 60 seconds timeout for larger files
   });
-} 
+}
