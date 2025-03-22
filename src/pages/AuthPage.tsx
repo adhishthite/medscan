@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -10,9 +10,25 @@ interface AuthPageProps {
   onAuthenticate: () => void
 }
 
+// Read valid API keys from .env file - we'll load this using environment variables
+// In Vite, environment variables are exposed via import.meta.env.VITE_*
+const VALID_AUTH_KEYS = import.meta.env.VITE_AUTH_KEYS 
+  ? import.meta.env.VITE_AUTH_KEYS.split(',').map((key: string) => key.trim()) 
+  : [];
+
 const AuthPage = ({ onAuthenticate }: AuthPageProps) => {
   const [key, setKey] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [keysLoaded, setKeysLoaded] = useState(false)
+
+  useEffect(() => {
+    // Check if we have valid auth keys configured
+    if (VALID_AUTH_KEYS.length === 0) {
+      console.warn("No authentication keys found in .env file. Authentication will fail.");
+    } else {
+      setKeysLoaded(true)
+    }
+  }, [])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,29 +40,33 @@ const AuthPage = ({ onAuthenticate }: AuthPageProps) => {
     
     setIsLoading(true)
     
-    // Simulate API call for key verification
+    // Check if the entered key matches any of the valid keys
     setTimeout(() => {
-      // For demo purposes, accept any key
-      // In a real app, you would validate this with an actual API call
+      if (VALID_AUTH_KEYS.includes(key.trim())) {
+        // Key is valid, authenticate the user
+        // Set session timeout for 30 minutes
+        const sessionTimeout = 30 * 60 * 1000; // 30 minutes in milliseconds
+        
+        // Store authentication timestamp
+        localStorage.setItem('authTimestamp', Date.now().toString());
+        
+        // Set timeout to logout after 30 minutes
+        const logoutTimer = setTimeout(() => {
+          // Clear auth data and reload page to logout
+          localStorage.removeItem('authTimestamp');
+          window.location.reload();
+          toast.info("Session expired. Please authenticate again.");
+        }, sessionTimeout);
+        
+        // Store timer ID in case we need to clear it
+        window.sessionStorage.setItem('logoutTimerId', logoutTimer.toString());
+        
+        onAuthenticate();
+      } else {
+        // Invalid key
+        toast.error("Invalid authentication key. Please try again.");
+      }
       
-      // Set session timeout for 30 minutes
-      const sessionTimeout = 30 * 60 * 1000; // 30 minutes in milliseconds
-      
-      // Store authentication timestamp
-      localStorage.setItem('authTimestamp', Date.now().toString());
-      
-      // Set timeout to logout after 30 minutes
-      const logoutTimer = setTimeout(() => {
-        // Clear auth data and reload page to logout
-        localStorage.removeItem('authTimestamp');
-        window.location.reload();
-        toast.info("Session expired. Please authenticate again.");
-      }, sessionTimeout);
-      
-      // Store timer ID in case we need to clear it
-      window.sessionStorage.setItem('logoutTimerId', logoutTimer.toString());
-      
-      onAuthenticate();
       setIsLoading(false);
     }, 1000)
   }
@@ -107,7 +127,7 @@ const AuthPage = ({ onAuthenticate }: AuthPageProps) => {
                       type="submit" 
                       className="w-full bg-primary text-white font-medium py-6 text-lg" 
                       size="lg"
-                      disabled={isLoading}
+                      disabled={isLoading || !keysLoaded}
                     >
                       {isLoading ? (
                         <div className="flex items-center justify-center space-x-2">
