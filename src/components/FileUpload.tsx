@@ -70,17 +70,17 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload }) => {
       `}
     >
       <input {...getInputProps()} />
-      <div className="flex flex-col items-center justify-center text-center p-6">
+      <div className="flex flex-col items-center justify-center text-center p-4">
         <motion.div 
-          className={`mb-3 p-3 rounded-full ${dragActive ? "bg-primary/10" : "bg-muted/50 group-hover:bg-primary/5"}`}
+          className={`mb-3 p-2 rounded-full ${dragActive ? "bg-primary/10" : "bg-muted/50 group-hover:bg-primary/5"}`}
           animate={{ 
             scale: dragActive ? 1.1 : 1,
-            y: dragActive ? -5 : 0
+            y: dragActive ? -4 : 0
           }}
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
         >
           <Upload
-            className={`h-8 w-8 transition-colors duration-300 ${dragActive ? "text-primary" : "text-muted-foreground group-hover:text-primary/70"}`}
+            className={`h-6 w-6 transition-colors duration-300 ${dragActive ? "text-primary" : "text-muted-foreground group-hover:text-primary/70"}`}
           />
         </motion.div>
         <AnimatePresence mode="wait">
@@ -90,7 +90,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="mb-1 font-medium"
+            className="mb-1 font-medium text-sm"
           >
             {dragActive ? "Drop files to upload" : "Drag and drop files here"}
           </motion.p>
@@ -98,7 +98,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload }) => {
         <p className="text-sm text-muted-foreground">
           or <span className="text-primary cursor-pointer underline-offset-2 hover:underline transition-all">browse files</span>
         </p>
-        <div className="mt-4 flex items-center text-xs text-muted-foreground px-3 py-1.5 bg-muted/50 rounded-full">
+        <div className="mt-3 flex items-center text-xs text-muted-foreground px-3 py-1 bg-muted/50 rounded-full">
           <AlertCircle className="mr-1.5 h-3 w-3 flex-shrink-0" />
           <span>Supported: JPEG, PNG, GIF, PDF, TIFF, BMP, DICOM (Max: 10MB)</span>
         </div>

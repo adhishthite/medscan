@@ -8,13 +8,6 @@ const USE_SECURE_BACKEND = true;
 
 export const MODELS = [
   {
-    id: ModelProvider.OpenAI,
-    name: "OpenAI GPT-4o",
-    description: "Advanced multimodal model from OpenAI with strong performance on medical imagery.",
-    apiKeyPlaceholder: USE_SECURE_BACKEND ? "Not required (using secure backend)" : "Enter your OpenAI API key",
-    apiKeyHelp: USE_SECURE_BACKEND ? "API keys are securely stored on the server." : "Requires access to the GPT-4o model."
-  },
-  {
     id: ModelProvider.Gemini,
     name: "Google Gemini 2.0 Flash",
     description: "Fast multimodal model from Google with good performance on medical analysis.",

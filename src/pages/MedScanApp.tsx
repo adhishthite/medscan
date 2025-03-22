@@ -13,8 +13,6 @@ import { motion, AnimatePresence } from "framer-motion"
 import FileUpload from "@/components/FileUpload"
 import ResultsView from "@/components/ResultsView"
 import Footer from "@/components/Footer"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
 import { analyzeWithModel, MODELS } from "@/lib/model-service"
 import { ModelProvider } from "@/lib/types"
 import { ModeToggle } from "@/components/mode-toggle"
@@ -113,11 +111,11 @@ const MedScanApp = () => {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       
-      <main className="flex-1 py-8">
-        <div className="container mx-auto max-w-4xl px-4">
-          <div className="flex justify-between items-center mb-8">
+      <main className="flex-1 py-4">
+        <div className="container mx-auto max-w-3xl px-4">
+          <div className="flex justify-between items-center mb-4">
             <motion.h1 
-              className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70"
+              className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
@@ -150,20 +148,20 @@ const MedScanApp = () => {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5 }}
               >
-                <Card className="shadow-lg overflow-hidden border-muted/50">
-                  <CardHeader className="bg-muted/20 border-b border-border/50 pb-6">
-                    <CardTitle className="text-2xl font-bold flex items-center gap-2">
-                      <div className="h-6 w-1 bg-primary rounded-full"></div>
+                <Card className="shadow-md overflow-hidden border-muted/50">
+                  <CardHeader className="bg-muted/20 border-b border-border/50 py-3">
+                    <CardTitle className="text-xl font-bold flex items-center gap-2">
+                      <div className="h-5 w-1 bg-primary rounded-full"></div>
                       Patient Information
                     </CardTitle>
-                    <CardDescription className="text-muted-foreground/80">
+                    <CardDescription className="text-sm text-muted-foreground/80">
                       Enter patient details and upload medical documents for analysis
                     </CardDescription>
                   </CardHeader>
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(handleSubmit)}>
-                      <CardContent className="space-y-6 pt-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <CardContent className="space-y-4 pt-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <FormField
                             control={form.control}
                             name="patientName"
@@ -209,7 +207,7 @@ const MedScanApp = () => {
                               <FormControl>
                                 <Textarea 
                                   placeholder="Enter any additional information here" 
-                                  className="min-h-32 shadow-sm resize-none"
+                                  className="min-h-[100px] shadow-sm resize-none"
                                   {...field} 
                                 />
                               </FormControl>
@@ -218,100 +216,64 @@ const MedScanApp = () => {
                           )}
                         />
                         
-                        <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
-                          <FormField
-                            control={form.control}
-                            name="modelProvider"
-                            render={({ field }) => (
-                              <FormItem className="space-y-3">
-                                <FormLabel className="text-sm font-medium">AI Model Selection</FormLabel>
-                                <FormControl>
-                                  <RadioGroup
-                                    onValueChange={field.onChange}
-                                    defaultValue={field.value}
-                                    className="flex flex-col space-y-3"
-                                  >
-                                    {MODELS.map(model => (
-                                      <div key={model.id} className="flex items-start space-x-3 space-y-0 rounded-md p-2 hover:bg-muted/50 transition-colors">
-                                        <RadioGroupItem value={model.id} id={model.id} />
-                                        <div className="grid gap-1.5 leading-none">
-                                          <Label
-                                            htmlFor={model.id}
-                                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                          >
-                                            {model.name}
-                                          </Label>
-                                          <p className="text-sm text-muted-foreground">
-                                            {model.description}
-                                          </p>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </RadioGroup>
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                        <div>
+                          <FormLabel className="text-sm font-medium">Medical Documents</FormLabel>
+                          <p className="text-xs text-muted-foreground mb-2">
+                            Upload up to 5 medical documents (X-Rays, MRIs, CT Scans, etc.)
+                          </p>
+                          <FileUpload onFileUpload={handleFileUpload} />
                         </div>
                         
-                        <div className="space-y-4">
-                          <div>
-                            <FormLabel className="text-sm font-medium">Medical Documents</FormLabel>
-                            <p className="text-sm text-muted-foreground mb-3">
-                              Upload up to 5 medical documents (X-Rays, MRIs, CT Scans, etc.)
-                            </p>
-                            <FileUpload onFileUpload={handleFileUpload} />
-                          </div>
-                          
-                          <AnimatePresence>
-                            {files.length > 0 && (
-                              <motion.div 
-                                className="space-y-2"
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.3 }}
-                              >
-                                <h4 className="text-sm font-medium flex items-center gap-2 mt-4">
-                                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary/10 text-primary text-xs font-bold">
-                                    {files.length}
-                                  </span>
-                                  <span>Uploaded Files ({files.length}/5)</span>
-                                </h4>
-                                <div className="space-y-2">
-                                  {files.map((file, index) => (
-                                    <motion.div 
-                                      key={index} 
-                                      className="flex items-center justify-between p-3 bg-muted/30 rounded-md border border-border/50"
-                                      initial={{ opacity: 0, x: -20 }}
-                                      animate={{ opacity: 1, x: 0 }}
-                                      exit={{ opacity: 0, x: 20 }}
-                                      transition={{ duration: 0.2, delay: index * 0.05 }}
-                                    >
-                                      <div className="flex items-center space-x-2">
-                                        <div className="p-1.5 bg-primary/10 rounded-md">
-                                          <FileText size={14} className="text-primary" />
-                                        </div>
-                                        <span className="text-sm truncate max-w-[250px]">{file.name}</span>
+                        <AnimatePresence>
+                          {files.length > 0 && (
+                            <motion.div 
+                              className="space-y-2"
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ duration: 0.3 }}
+                            >
+                              <h4 className="text-sm font-medium flex items-center gap-2">
+                                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary/10 text-primary text-xs font-bold">
+                                  {files.length}
+                                </span>
+                                <span>Uploaded Files ({files.length}/5)</span>
+                              </h4>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {files.map((file, index) => (
+                                  <motion.div 
+                                    key={index} 
+                                    className="flex items-center justify-between p-2 bg-muted/30 rounded-md border border-border/50"
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: 20 }}
+                                    transition={{ duration: 0.2, delay: index * 0.05 }}
+                                  >
+                                    <div className="flex items-center space-x-2">
+                                      <div className="p-1 bg-primary/10 rounded-md">
+                                        <FileText size={12} className="text-primary" />
                                       </div>
-                                      <Button 
-                                        variant="ghost" 
-                                        size="icon"
-                                        className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive"
-                                        onClick={() => removeFile(index)}
-                                      >
-                                        <X size={14} />
-                                      </Button>
-                                    </motion.div>
-                                  ))}
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
+                                      <span className="text-sm truncate max-w-[200px]">{file.name}</span>
+                                    </div>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon"
+                                      className="h-6 w-6 rounded-full hover:bg-destructive/10 hover:text-destructive"
+                                      onClick={() => removeFile(index)}
+                                    >
+                                      <X size={12} />
+                                    </Button>
+                                  </motion.div>
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                        {/* Hidden field for modelProvider */}
+                        <input type="hidden" {...form.register("modelProvider")} value={ModelProvider.Gemini} />
                       </CardContent>
-                      <CardFooter className="border-t border-border/50 bg-muted/10 py-6 px-6">
+                      <CardFooter className="border-t border-border/50 bg-muted/10 py-4 px-4">
                         <motion.div 
                           className="w-full"
                           whileHover={{ scale: 1.01 }}
@@ -343,7 +305,7 @@ const MedScanApp = () => {
         </div>
       </main>
       
-      <Footer modelProvider={modelProvider} />
+      <Footer />
     </div>
   )
 }
