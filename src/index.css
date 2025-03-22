@@ -137,4 +137,78 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Add prose styles for markdown content */
+  .prose {
+    max-width: 65ch;
+    @apply text-foreground;
+  }
+
+  .prose h1, .prose h2, .prose h3, .prose h4 {
+    @apply font-bold text-foreground mt-8 mb-4;
+  }
+
+  .prose h1 {
+    @apply text-3xl;
+  }
+
+  .prose h2 {
+    @apply text-2xl;
+  }
+
+  .prose h3 {
+    @apply text-xl;
+  }
+
+  .prose ul, .prose ol {
+    @apply pl-6 my-4;
+  }
+
+  .prose ul {
+    @apply list-disc;
+  }
+
+  .prose ol {
+    @apply list-decimal;
+  }
+
+  .prose p {
+    @apply my-4;
+  }
+
+  .prose a {
+    @apply text-primary hover:underline;
+  }
+
+  .prose blockquote {
+    @apply border-l-4 border-muted pl-4 italic;
+  }
+
+  .prose pre {
+    @apply bg-muted p-4 rounded-md overflow-auto my-4;
+  }
+
+  .prose code {
+    @apply bg-muted px-1 py-0.5 rounded text-sm;
+  }
+
+  .prose img {
+    @apply rounded-md my-4;
+  }
+
+  .prose hr {
+    @apply my-8 border-muted;
+  }
+
+  .prose strong {
+    @apply font-bold;
+  }
+
+  .prose em {
+    @apply italic;
+  }
+
+  .dark .prose {
+    @apply text-foreground;
+  }
 }
