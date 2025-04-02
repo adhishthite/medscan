@@ -1,0 +1,13 @@
+{
+  "buildCommand": "npm run build",
+  "installCommand": "npm install --legacy-peer-deps",
+  "outputDirectory": "dist",
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/" }
+  ],
+  "env": {
+    "VITE_AUTH_KEYS": "@medscan-auth-keys",
+    "VITE_API_BASE_URL": "@medscan-api-url"
+  }
+} 
