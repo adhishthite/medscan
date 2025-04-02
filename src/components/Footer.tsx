@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 
 const Footer: React.FC = () => {
-  const modelName = "Gemini 2.0 Flash";
+  const modelName = "AI Medical Assistant";
   
   return (
     <motion.footer 

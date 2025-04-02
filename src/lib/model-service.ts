@@ -9,10 +9,10 @@ const USE_SECURE_BACKEND = true;
 export const MODELS = [
   {
     id: ModelProvider.Gemini,
-    name: "Google Gemini 2.0 Flash",
-    description: "Fast multimodal model from Google with good performance on medical analysis.",
-    apiKeyPlaceholder: USE_SECURE_BACKEND ? "Not required (using secure backend)" : "Enter your Google AI API key",
-    apiKeyHelp: USE_SECURE_BACKEND ? "API keys are securely stored on the server." : "Requires access to the Gemini 2.0 Flash model."
+    name: "AI Medical Assistant",
+    description: "Advanced multimodal model with good performance on medical analysis.",
+    apiKeyPlaceholder: USE_SECURE_BACKEND ? "Not required (using secure backend)" : "Enter your API key",
+    apiKeyHelp: USE_SECURE_BACKEND ? "API keys are securely stored on the server." : "Requires access to the AI model."
   }
 ];
 
