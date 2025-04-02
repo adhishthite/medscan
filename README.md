@@ -1,54 +1,112 @@
-# React + TypeScript + Vite
+# MedScan
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React TypeScript application built with Vite and Express backend.
 
-Currently, two official plugins are available:
+## Prerequisites
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node.js (version 16 or higher)
+- npm
 
-## Expanding the ESLint configuration
+## Installation
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. Clone the repository:
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+git clone https://github.com/yourusername/medscan.git
+cd medscan
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. Install dependencies:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+npm install
+```
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+3. Set up environment variables:
+
+```bash
+cp .env.example .env
+```
+
+Edit the `.env` file and add your API keys:
+- `OPENAI_API_KEY` - Your OpenAI API key
+- `GEMINI_API_KEY` - Your Google Gemini API key
+- `VITE_AUTH_KEYS` - Comma-separated list of authentication keys
+
+## Running the Application
+
+### Development Mode
+
+To run both the frontend and backend concurrently:
+
+```bash
+npm start
+```
+
+This command will start:
+
+- The React frontend (Vite development server) at `http://localhost:5173` by default
+- The Express backend server at `http://localhost:3001`
+
+### Other Available Commands
+
+```bash
+# Run only the frontend
+npm run dev
+
+# Run only the backend
+npm run server
+
+# Build the application for production
+npm run build
+
+# Preview the production build
+npm run preview
+```
+
+## Technologies Used
+
+- **Frontend**:
+  - React 19
+  - TypeScript
+  - Vite
+  - Tailwind CSS
+  - Radix UI components
+  - React Hook Form
+  - Zod validation
+
+- **Backend**:
+  - Express
+  - TypeScript
+  - LangChain
+  - OpenAI and Google Generative AI integrations
+
+## Project Structure
+
+```
+medscan/
+├── api/                # Server API endpoints for Vercel deployments
+│   └── models/         # Model-specific API handlers
+├── public/             # Static assets served by Vite
+├── src/                # Source code
+│   ├── assets/         # Images, fonts, and other static assets
+│   ├── components/     # Reusable React components
+│   ├── hooks/          # Custom React hooks
+│   ├── lib/            # Utility functions and shared code
+│   ├── pages/          # Application pages/views
+│   ├── server/         # Express server code
+│   │   ├── routes/     # API route definitions
+│   │   ├── services/   # Business logic services
+│   │   └── types/      # TypeScript type definitions
+│   ├── App.css         # Main application styles
+│   ├── App.tsx         # Main application component
+│   ├── index.css       # Global CSS styles
+│   ├── main.tsx        # Application entry point
+│   └── vite-env.d.ts   # Vite type declarations
+├── .env.example        # Example environment variables
+├── index.html          # HTML entry point
+├── package.json        # Project dependencies and scripts
+├── tsconfig.json       # TypeScript configuration
+├── vite.config.ts      # Vite configuration
+└── vercel.json         # Vercel deployment configuration
 ```
